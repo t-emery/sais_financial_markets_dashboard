@@ -13,9 +13,15 @@ This GitHub repo houses the code for a simple global financial markets dashboard
 
 ## Purpose
 
-Financial markets are complex. The objective of this dashboard is to give readers a 40,000 ft view of global financial markets in as few indicators as possible to. It seeks to avoid cognitive overload, illuminate big-picture trends, and inform where readers might want to dig deeper.
+Financial markets are complex. The objective of this dashboard is to give readers a 40,000 ft view of global financial markets in as few indicators as possible. The dashboard seeks to:
 
-The second purpose of the dashboard is to provide the class a practical example of how R can be used to create automatable data products that save us time and help us make better decisions.
+1.  Avoid cognitive overload by focusing on only five indicators.
+
+2.  Illuminate big-picture trends in global financial markets.
+
+3.  Inform where readers might want to dig deeper.
+
+The second purpose of the dashboard is to provide the class a practical example of how R (and other open-source tools) can be used to create automatable data products that save us time and help us make better decisions.
 
 ## Indicators
 
