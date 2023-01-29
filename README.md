@@ -10,6 +10,8 @@ meeting* at the beginning of class each week for **Sustainable Finance:
 Applications and Methods** at [Johns Hopkins School of Advanced
 International Studies (SAIS)](https://sais.jhu.edu/).
 
+<img src="images/SAIS%20Course%20-%20Cover%20Art.png" width="1600" />
+
 ## Purpose
 
 Financial markets are complex. The objective of this dashboard is to
@@ -79,6 +81,3 @@ Initial To-Dos:
   want to keep the 40,000 ft dashboard as un-cluttered as possible. But
   I plan to add secondary dashboards that use publicly available data to
   dig in deeper on asset classes of interest.
-
-<img src="images/SAIS%20Course%20-%20Cover%20Art.png"
-data-fig-align="center" />

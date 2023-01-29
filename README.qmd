@@ -9,6 +9,8 @@ editor: visual
 
 This GitHub repo houses the code for a simple global financial markets dashboard used to guide discussion for the 15 minute *trading floor meeting* at the beginning of class each week for **Sustainable Finance: Applications and Methods** at [Johns Hopkins School of Advanced International Studies (SAIS)](https://sais.jhu.edu/).
 
+![](images/SAIS%20Course%20-%20Cover%20Art.png){width="1600"}
+
 ## Purpose
 
 Financial markets are complex. The objective of this dashboard is to give readers a 40,000 ft view of global financial markets in as few indicators as possible to. It seeks to avoid cognitive overload, illuminate big-picture trends, and inform where readers might want to dig deeper.
@@ -54,5 +56,3 @@ Initial To-Dos:
 -   **Automate using GitHub Actions**: Using the [blogpost written by Bea Milz](https://beamilz.com/posts/series-gha/2022-series-gha-2-creating-your-first-action/en/), I've had initial success automating R scripts using [GitHub Actions](https://github.com/features/actions). I'd like to automate this dashboard to update daily or weekly. Work hard to be lazy.
 
 -   **Adding secondary dashboards**: With dashboards, brevity is sacred. I want to keep the 40,000 ft dashboard as un-cluttered as possible. But I plan to add secondary dashboards that use publicly available data to dig in deeper on asset classes of interest.
-
-![](images/SAIS%20Course%20-%20Cover%20Art.png){fig-align="center"}
