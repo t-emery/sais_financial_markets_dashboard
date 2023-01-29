@@ -79,3 +79,6 @@ Initial To-Dos:
   want to keep the 40,000 ft dashboard as un-cluttered as possible. But
   I plan to add secondary dashboards that use publicly available data to
   dig in deeper on asset classes of interest.
+
+<img src="images/SAIS%20Course%20-%20Cover%20Art.png"
+data-fig-align="center" />

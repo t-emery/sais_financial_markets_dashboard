@@ -54,3 +54,5 @@ Initial To-Dos:
 -   **Automate using GitHub Actions**: Using the [blogpost written by Bea Milz](https://beamilz.com/posts/series-gha/2022-series-gha-2-creating-your-first-action/en/), I've had initial success automating R scripts using [GitHub Actions](https://github.com/features/actions). I'd like to automate this dashboard to update daily or weekly. Work hard to be lazy.
 
 -   **Adding secondary dashboards**: With dashboards, brevity is sacred. I want to keep the 40,000 ft dashboard as un-cluttered as possible. But I plan to add secondary dashboards that use publicly available data to dig in deeper on asset classes of interest.
+
+![](images/SAIS%20Course%20-%20Cover%20Art.png){fig-align="center"}
