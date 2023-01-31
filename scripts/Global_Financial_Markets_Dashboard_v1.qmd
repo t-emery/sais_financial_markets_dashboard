@@ -13,6 +13,8 @@ execute:
   message: false
 ---
 
+Last Updated: `r Sys.time()`
+
 ```{r setup}
 
 # load libraries
@@ -194,7 +196,7 @@ dashboard_data %>%
 
 ### Discussion
 
-**S&P 500**: is an [equity index tracking the performance of the 500 largest US listed companies](https://en.wikipedia.org/wiki/S%26P_500). Because of its size and liquidity, it is an effective barometer of global risk appetite. Moves in the S&P 500 will often show up in the appetite for other risk assets across asset classes and geographies. Data from [Yahoo Finance](https://finance.yahoo.com/quote/%5EGSPC?p=^GSPC&.tsrc=fin-srch).
+**S&P 500**: is an [equity index tracking the performance of the 500 largest US listed companies](https://en.wikipedia.org/wiki/S%26P_500). Because of its size and liquidity, it is an effective barometer of global risk appetite. Moves in the S&P 500 will often show up in the appetite for other risk assets across asset classes and geographies. Data from [Yahoo Finance](https://finance.yahoo.com/quote/%5EGSPC?p=%5EGSPC&.tsrc=fin-srch).
 
 ## Currencies
 

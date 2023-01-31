@@ -1,0 +1,278 @@
+---
+title: "Global Financial Markets Dashboard"
+author: "Teal Emery"
+format: 
+  html:
+    code-fold: true
+    code-tools: true
+    code-link: true
+    toc: true
+editor: visual
+execute:
+  warning: false
+  message: false
+---
+
+Last Updated: `r Sys.time()`
+
+```{r setup}
+
+# load libraries
+library(tidyverse) # because, always
+library(tidyquant) # for tq_get() to pull financial data
+library(plotly) # for interactive charts
+
+# You need to have the open source Google Fonts Roboto font installed on your computer.  Here is a blog describing how to do this: https://babichmorrowc.github.io/post/2019-10-11-google-fonts/ . I'll add better step-by-step instructions later. 
+
+pull_dashboard_data <- function(start_date = as.Date("2000-01-01")) {
+  
+  # Data to pull from FRED (Federal Reserve Economic Data)
+  fred_tbl <- tribble(
+    ~"symbol", ~"indicator",
+    "DFF", "Fed Funds Rate",
+    "DTWEXBGS", "Broad USD Index"
+    )
+  
+  # Data to pull from Yahoo Finance. Data updated more frequently & with less of a lag than FRED.
+  yahoo_tbl <- tribble(
+    ~"symbol", ~"indicator",
+    "^GSPC", "S&P 500",
+    "BZ=F","Oil Price",
+    "^TNX", "US 10yr Yield"
+    )
+  
+  # pull the FRED data
+  fred_data <- fred_tbl %>%
+    tq_get(get = "economic.data", from = start_date)
+  
+  # FRED only has the last 10 years of S&P 500 data, but Yahoo has it from the 1920s onward
+  yahoo_data <- yahoo_tbl %>%
+    tq_get(from = start_date) %>%
+    # make the columns the same as the FRED data
+    select(symbol:date, price = close)
+  
+  #combine into one tibble
+  combined_data <- fred_data %>%
+    bind_rows(yahoo_data) %>%
+    select(indicator, date, level = price)
+}
+## use this function to pull all the data
+dashboard_data <- pull_dashboard_data()
+
+
+### Set Range Selector Options for Plotly plots
+# This code adds:
+## makes the chart default to showing 1 year of data
+## adds a range slider
+## adds range selector buttons
+## limits the chart to showing weekdays so that the lines don't show gaps for every weekend, as is the default for plotly. 
+x_axis_range_options <- list(
+  # it's obvious that the x axis is the date
+  title = "",
+  # makes 1 year the default view 
+  range = c(max(dashboard_data$date)-365, max(dashboard_data$date)),
+  # makes the range slider visible
+  rangeslider = list(visible = T, type = "date"),
+  # specify the range selector buttons
+  rangeselector=list(
+    buttons=list(
+      list(count=1, label="1m", step="month", stepmode="backward"),
+      list(count=6, label="6m", step="month", stepmode="backward"),
+      list(count=1, label="YTD", step="year", stepmode="todate"),
+      list(count=1, label="1y", step="year", stepmode="backward"),
+      list(count=5, label="5y", step="year", stepmode="backward"),
+      list(count=10, label="10y", step="year", stepmode="backward"),
+      list(step="all", label = "All")
+      )),
+  # eliminate weekends
+  rangebreaks=list(bounds=list("sat", "mon") #hide weekends
+))
+```
+
+# Introduction
+
+Financial markets are complex. The objective of this dashboard is to give readers a 40,000 ft view of global financial markets in as few indicators as possible. The dashboard seeks to:
+
+1.  Avoid cognitive overload by focusing on only five indicators.
+
+2.  Illuminate big-picture trends in global financial markets.
+
+3.  Inform where readers might want to dig deeper.
+
+This dashboard is meant to anchor and inform the 15 minute trading floor meeting at the beginning of each class for **Sustainable Finance: Applications and Methods** at the [Johns Hopkins School of Advanced International Studies (SAIS)](https://sais.jhu.edu/).
+
+It is a work in progress, and will evolve & improve over time.
+
+## Indicators
+
+This dashboard focuses on five indicators central to global financial markets.
+
+-   **Interest Rates**:
+
+    -   Fed Funds Rate
+
+    -   US 10-Year Treasury Yield
+
+-   **Risk Assets**:
+
+    -   S&P 500
+
+-   **Commodities**:
+
+    -   Oil Prices (Brent)
+
+-   **Currencies**:
+
+    -   Broad USD Index
+
+# Dashboard
+
+## Interest Rates
+
+```{r}
+#| warning: false
+#| message: false
+dashboard_data %>%
+  filter(date >= ymd("2000-01-01")) %>%
+  filter(indicator %in% c("Fed Funds Rate", "US 10yr Yield")) %>%
+  mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
+  filter(!weekday %in% c("Sat", "Sun")) %>%
+  plot_ly(x = ~date, y = ~level, hoverinfo = "text+name", text = ~paste0("Level: ", round(level,2),"%", "<br>",
+                                                                    "Date: ", date)) %>%
+  add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 4)) %>%
+  layout(xaxis = x_axis_range_options) %>%
+  layout(#font = list(family = "Roboto Condensed"),
+         title = list(text = "<b>Interest Rates: Fed Funds Rate & 10yr UST<b>", 
+                      font = list(size = 25)
+                      ),
+         # add a margin between the title & graph
+         margin = list(t = 70),
+         yaxis = list(
+           title = list(
+             text = "<b>Level<b>", 
+             font = list(size = 16)
+             ),
+           ticksuffix = "%"
+           )
+  )
+```
+
+### Discussion
+
+**Federal Funds Rate**: is the [main interest rate tool](https://www.stlouisfed.org/open-vault/2018/january/federal-funds-rate-affect-consumers) of the US Federal Reserve. Expectations about the future path of the Fed Funds Rate are a primary driver of risk appetite in global financial markets. Think of expectations about future Fed policy as the symphony conductor directing global financial markets. [Data from FRED](https://fred.stlouisfed.org/series/DFF).
+
+**10 Year US Treasury Yields**: is one of the deepest, most liquid financial markets in the world. Because it is traded actively, it embeds market expectations about future growth and inflation that will drive Federal Reserve monetary policy. Rapid moves in US Treasury yields are a strong signal that markets are repricing risk appetite. When markets face great uncertainty, such as at the beginning of the COVID pandemic, global investors will buy US Treasury Bonds in a [Flight to Safety](https://www.investopedia.com/terms/f/flighttoquality.asp). Data from [Yahoo Finance](https://finance.yahoo.com/quote/%5ETNX?p=%5ETNX) (updates faster than FRED).
+
+## Risk Assets
+
+```{r}
+#| warning: false
+#| message: false
+dashboard_data %>%
+  filter(date >= ymd("2000-01-01")) %>%
+  filter(indicator %in% c("S&P 500")) %>%
+  mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
+  filter(!weekday %in% c("Sat", "Sun")) %>%
+  plot_ly(x = ~date, y = ~level, hoverinfo = "text+name", text = ~paste0("Level: ", format(round(level, 0), nsmall=0, big.mark=","), "<br>",
+                                                                    "Date: ", date)) %>%
+  add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 4)) %>%
+  layout(xaxis = x_axis_range_options) %>%
+  layout(#font = list(family = "Roboto Condensed"),
+         title = list(text = "<b>Risk Assets: S&P 500<b>", 
+                      font = list(size = 25)
+                      ),
+         # add a margin between the title & graph
+         margin = list(t = 70),
+         yaxis = list(
+           title = list(
+             text = "<b>Index Level<b>", 
+             font = list(size = 16)
+             )
+           )
+  )
+```
+
+### Discussion
+
+**S&P 500**: is an [equity index tracking the performance of the 500 largest US listed companies](https://en.wikipedia.org/wiki/S%26P_500). Because of its size and liquidity, it is an effective barometer of global risk appetite. Moves in the S&P 500 will often show up in the appetite for other risk assets across asset classes and geographies. Data from [Yahoo Finance](https://finance.yahoo.com/quote/%5EGSPC?p=^GSPC&.tsrc=fin-srch).
+
+## Currencies
+
+```{r}
+#| warning: false
+#| message: false
+dashboard_data %>%
+  filter(date >= ymd("2000-01-01")) %>%
+  filter(indicator %in% c("Broad USD Index")) %>%
+  mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
+  filter(!weekday %in% c("Sat", "Sun")) %>%
+  plot_ly(x = ~date, y = ~level, hoverinfo = "text+name", text = ~paste0("Level: ", format(round(level, 0), nsmall=0, big.mark=","), "<br>",
+                                                                    "Date: ", date)) %>%
+  add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 4)) %>%
+  layout(xaxis = x_axis_range_options) %>%
+  layout(#font = list(family = "Roboto Condensed"),
+         title = list(text = "<b>Currencies: Broad USD Index<b>", 
+                      font = list(size = 25)
+                      ),
+         # add a margin between the title & graph
+         margin = list(t = 70),
+         yaxis = list(
+           title = list(
+             text = "<b>Index Level<b>", 
+             font = list(size = 16)
+             )
+           )
+  )
+```
+
+### Discussion
+
+**Broad USD Index**: is a trade-weighted index measuring the US dollar's strength against a trade-weighted basket of currencies. Because currencies are quoted in relation to other currencies, it can initially be confusing when the exchange rate between USD and EUR moves, whether that reflects say, the strengthening of the US dollar, or the weakening of the Euro. Using a trade weighted index helps give perspective.
+
+The dollar can strengthen as part of the same flight to safety discussed above with US Treasuries. It can also reflect differential expectations about monetary policy, with the US dollar strengthening when the Fed is expected to raise interest rates to levels higher than its main trading partners, or vice versa. A strong USD will make it more challenging for emerging market countries that have borrowed in USD to pay their debts, as they will have to pay back more of their local currency per dollar borrowed. [Data from FRED](https://fred.stlouisfed.org/series/DTWEXBGS).
+
+## Commodities
+
+```{r}
+#| warning: false
+#| message: false
+dashboard_data %>%
+  filter(date >= ymd("2000-01-01")) %>%
+  filter(indicator %in% c("Oil Price")) %>%
+  mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
+  filter(!weekday %in% c("Sat", "Sun")) %>%
+  plot_ly(x = ~date, y = ~level, hoverinfo = "text+name", text = ~paste0("Level: $", format(round(level, 0), nsmall=0, big.mark=","), "<br>",
+                                                                    "Date: ", date)) %>%
+  add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 4)) %>%
+  layout(xaxis = x_axis_range_options) %>%
+  layout(#font = list(family = "Roboto Condensed"),
+         title = list(text = "<b>Commodities: Oil Price<b>", 
+                      font = list(size = 25)
+                      ),
+         # add a margin between the title & graph
+         margin = list(t = 70),
+         yaxis = list(
+           title = list(
+             text = "<b>Brent Crude<b>", 
+             font = list(size = 16)
+             ),
+           tickprefix = "$"
+           )
+  )
+```
+
+### Discussion
+
+**Oil Price**: Despite the ongoing energy transition, oil prices remain central to the global economy. Petroleum products remain a key input cost directly or indirectly (through fertilizers for food, industrial processes, transportation, heating & cooling). The supply and demand for oil are relatively tightly matched. Supply is influenced by the [OPEC+ cartel](https://www.weforum.org/agenda/2022/11/oil-opec-energy-price/) of oil producing states, plus the [willingness of capital markets to fund exploration of production](https://www.goldmansachs.com/insights/pages/the-new-oil-order/) of non-OPEC producers such as US shale producers. It takes years for new supply to come online. So oil prices are heavily influenced by expectations of global demand. Sharp declines in oil prices can signal market expectations of a slowdown in global growth. Sharp increases in oil prices feed into other prices across the global economy. It can increase pressure on central banks to tighten monetary policy. For oil-importing emerging markets it can be a severe balance of payments shock that puts pressure on currencies and budgets. [Data from Yahoo Finance](https://finance.yahoo.com/quote/BZ=F/).
+
+# Work in Progress
+
+This is a work in progress. Over time, I'll improve the dashboard, and add secondary dashboards that do a deeper dive into key asset classes.
+
+Initial To-Dos:
+
+-   **Clean up code**: I plan to clean up the code into well-annotated functions.
+
+-   **Automate using GitHub Actions**: Using the [blogpost written by Bea Milz](https://beamilz.com/posts/series-gha/2022-series-gha-2-creating-your-first-action/en/), I've had initial success automating R scripts using [GitHub Actions](https://github.com/features/actions). I'd like to automate this dashboard to update daily or weekly. Work hard to be lazy.
+
+-   **Adding secondary dashboards**: With dashboards, brevity is sacred. I want to keep the 40,000 ft dashboard as un-cluttered as possible. But I plan to add secondary dashboards that use publicly available data to dig in deeper on asset classes of interest.
