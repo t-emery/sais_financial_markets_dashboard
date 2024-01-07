@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/997004/059849aea11644649cf1486d4e001979
+bundleId: https://api.rpubs.com/api/v1/document/997004/059849aea11644649cf1486d4e001979
+url: http://rpubs.com/Teal_Emery/997004
+when: 1679000556.34078
+lastSyncTime: 1679000556.34079
