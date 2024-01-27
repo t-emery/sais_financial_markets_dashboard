@@ -130,14 +130,14 @@ dashboard_data %>%
   add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 3)) %>%
   layout(xaxis = x_axis_range_options) %>%
   layout(font = list(family = "Roboto Condensed"),
-         title = list(text = "<b>Interest Rates: Fed Funds Rate & 10yr UST<b>", 
+         title = list(text = "<b>Interest Rates: Fed Funds Rate & 10yr UST<b>",
                       font = list(size = 25)
                       ),
          # add a margin between the title & graph
          margin = list(t = 70),
          yaxis = list(
            title = list(
-             text = "<b>Level<b>", 
+             text = "<b>Level<b>",
              font = list(size = 16)
              ),
            ticksuffix = "%"
