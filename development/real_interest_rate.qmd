@@ -1,0 +1,127 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## 
+
+**T10YIE**
+
+DGS10
+
+```{r}
+#| message:false
+library(tidyverse)
+library(tidyquant)
+library(janitor)
+library(ggrepel)
+```
+
+data_tbl
+
+```{r}
+data_tbl <- tribble(~symbol, ~description,
+        "DGS10", "UST 10 Yr Yield",
+        "T10YIE", "10 yr Break Even") |> 
+  tq_get(get = "economic.data")
+
+data_tbl 
+```
+
+```{r}
+data_tbl |> 
+  ggplot(aes(x = date, y = price, color = description)) +
+  geom_line() +
+  labs(color = "")
+```
+
+```{r}
+data_wide <- data_tbl |> 
+  select(description:price) |> 
+  pivot_wider(names_from = description, values_from = price) |> 
+  clean_names() |> 
+  # proper way 1st: ratio
+  mutate(real_int_10yr = ((1+ust_10_yr_yield/100)/(1+x10_yr_break_even/100)-1) * 100,
+         # simple way 2nd to get sense of how different they are
+         real_int_10yr_simple = ust_10_yr_yield-x10_yr_break_even) 
+  
+data_wide
+```
+
+```{r}
+data_long <- data_wide|> 
+  pivot_longer(cols = -date) 
+
+data_long
+```
+
+```{r}
+data_long |> 
+  ggplot(aes(x = date, y = value, color = fct_reorder2(.f = name, .x = date, .y = value))) +
+  geom_line(alpha = .5) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+  labs(color = "")
+
+```
+
+Takeaway: at these levels, there is no difference between the two methods. might be some difference for countries with higher inflation + interest rates.
+
+> A *real* interest rate is an inflation-adjusted interest rate. You might think of a real interest rate as the price of borrowing in goods, not money. Because people and firms make decisions based on real quantities, not nominal quantities, real interest rates are more useful than nominal interest rates. For example, real interest rates are much more informative than nominal interest rates about the stance of monetary policy.
+>
+> Technically, a gross real interest rate (*1+r*) is calculated as the ratio of gross nominal rates (*1+i*) to the gross inflation rate (*1+π*):
+>
+> *(1+r) = (1+i) / (1+π)*
+>
+> Suppose that candy bars cost \$1 on January 1, 2022. The lender could use the \$100 to buy 100 candy bars, but forgoes the purchase to make a loan of \$100 instead. When the borrower repays the loan at 5% interest on January 1, 2023, the lender receives \$105 dollars. If inflation has raised the price of candy bars by 10% by January 1, 2023, then each candy bar costs \$1.10 and the lender can buy only 95 candy bars: *105/1.1 = 95.4545*. The gross real rate of return equals the real goods one can buy with the payoff from the loan (95.4545 candy bars) over the initial real value of the loan (100 candy bars). So, the gross real rate of interest is *95.4545/100 = 1.05/1.10 = (1+i)/(1+π)*.
+>
+> This is often approximated as the interest rate minus the inflation rate.
+>
+> *r ≅ i -- π*
+>
+> This approximation is generally useful for relatively low rates of interest and inflation. With the example above, it would be *-5% = 5% -- 10%*. And yes, real interest rates can be negative.
+
+```{r}
+new_names_tbl <- tribble(~name, ~new_name,
+        "ust_10_yr_yield","10yr UST Yield",
+        "x10_yr_break_even", "10yr Break Even",
+        "real_int_10yr", "10yr Real Interest Rate")
+```
+
+```{r}
+final_data <- data_long |> 
+  filter(name != "real_int_10yr_simple") |> 
+  left_join(new_names_tbl, by = "name") 
+
+final_data 
+  
+```
+
+```{r}
+final_data |> 
+  filter(date >= max(date)-years(3)) |> 
+  drop_na() |> 
+  ggplot(aes(x = date, 
+             y = value, 
+             color = fct_reorder2(.f = new_name, .x = date, .y = value))) +
+  geom_line(linewidth = 1, alpha = .8) +
+  geom_ma(linewidth = 3, alpha = .5) +
+  geom_hline(yintercept = 0, color = "black", alpha = .5, linetype = "dashed") +
+  labs(title = "Real Interest Rate",
+    color = "") +
+  theme_minimal(base_family = "Roboto Condensed")
+```
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(data.table)
+
+# Define the URL of the UN Votes data
+url <- "https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/1TKMUP/J6WZLO"
+
+# Download the data
+un_votes <- fread(url, header = TRUE)
+
+un_votes
+```

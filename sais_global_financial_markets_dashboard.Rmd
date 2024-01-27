@@ -79,9 +79,9 @@ x_axis_range_options <- list(
       list(count=6, label="6m", step="month", stepmode="backward"),
       list(count=1, label="YTD", step="year", stepmode="todate"),
       list(count=1, label="1y", step="year", stepmode="backward"),
-      list(count=5, label="5y", step="year", stepmode="backward"),
-      list(count=10, label="10y", step="year", stepmode="backward"),
-      list(step="all", label = "All")
+      list(count=5, label="5y", step="year", stepmode="backward")
+      #list(count=10, label="10y", step="year", stepmode="backward"),
+      #list(step="all", label = "All")
       )),
   # eliminate weekends
   rangebreaks=list(bounds=list("sat", "mon") #hide weekends
@@ -133,6 +133,7 @@ This dashboard focuses on five indicators central to global financial markets.
 
 ```{r}
 dashboard_data %>%
+  filter(date >= today()-years(5)) %>%
   filter(date >= ymd("2000-01-01")) %>%
   filter(indicator %in% c("Fed Funds Rate", "US 10yr Yield")) %>%
   mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
@@ -168,6 +169,7 @@ dashboard_data %>%
 ```{r}
 dashboard_data %>%
   filter(date >= ymd("2000-01-01")) %>%
+  filter(date >= today()-years(5)) %>%
   filter(indicator %in% c("S&P 500")) %>%
   mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
   filter(!weekday %in% c("Sat", "Sun")) %>%
@@ -199,6 +201,7 @@ dashboard_data %>%
 ```{r}
 dashboard_data %>%
   filter(date >= ymd("2000-01-01")) %>%
+  filter(date >= today()-years(5)) %>%
   filter(indicator %in% c("Broad USD Index")) %>%
   mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
   filter(!weekday %in% c("Sat", "Sun")) %>%
@@ -232,6 +235,7 @@ The dollar can strengthen as part of the same flight to safety discussed above w
 ```{r}
 dashboard_data %>%
   filter(date >= ymd("2000-01-01")) %>%
+  filter(date >= today()-years(5)) %>%
   filter(indicator %in% c("Oil Price")) %>%
   mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
   filter(!weekday %in% c("Sat", "Sun")) %>%

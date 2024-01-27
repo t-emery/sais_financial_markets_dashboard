@@ -1,0 +1,146 @@
+---
+title: "Global Financial Markets Dashboard"
+author: "Teal Emery"
+format: 
+    html:
+      embed-resources: true
+      mainfont: "Roboto Condensed"
+editor: visual
+---
+
+## 
+
+```{r setup}
+#| include: false
+# load libraries
+library(tidyverse) # because, always
+library(tidyquant) # for tq_get() to pull financial data
+library(plotly) # for interactive charts
+```
+
+```{r}
+#| include: false
+# You need to have the open source Google Fonts Roboto font installed on your computer.  Here is a blog describing how to do this: https://babichmorrowc.github.io/post/2019-10-11-google-fonts/ . I'll add better step-by-step instructions later. 
+
+pull_dashboard_data <- function(start_date = as.Date("2000-01-01")) {
+  
+  # Data to pull from FRED (Federal Reserve Economic Data)
+  fred_tbl <- tribble(
+    ~"symbol", ~"indicator",
+    "DFF", "Fed Funds Rate",
+    "DTWEXBGS", "Broad USD Index"
+    )
+  
+  # Data to pull from Yahoo Finance. Data updated more frequently & with less of a lag than FRED.
+  yahoo_tbl <- tribble(
+    ~"symbol", ~"indicator",
+    "^GSPC", "S&P 500",
+    "BZ=F","Oil Price",
+    "^TNX", "US 10yr Yield"
+    )
+  
+  # pull the FRED data
+  fred_data <- fred_tbl %>%
+    tq_get(get = "economic.data", from = start_date)
+  
+  # FRED only has the last 10 years of S&P 500 data, but Yahoo has it from the 1920s onward
+  yahoo_data <- yahoo_tbl %>%
+    tq_get(from = start_date) %>%
+    # make the columns the same as the FRED data
+    select(symbol:date, price = close)
+  
+  #combine into one tibble
+  combined_data <- fred_data %>%
+    bind_rows(yahoo_data) %>%
+    select(indicator, date, level = price)
+}
+## use this function to pull all the data
+dashboard_data <- pull_dashboard_data()
+
+
+### Set Range Selector Options for Plotly plots
+# This code adds:
+## makes the chart default to showing 1 year of data
+## adds a range slider
+## adds range selector buttons
+## limits the chart to showing weekdays so that the lines don't show gaps for every weekend, as is the default for plotly. 
+x_axis_range_options <- list(
+  # it's obvious that the x axis is the date
+  title = "",
+  # makes 1 year the default view 
+  range = c(max(dashboard_data$date)-365, max(dashboard_data$date)),
+  # makes the range slider visible
+  rangeslider = list(visible = T, type = "date"),
+  # specify the range selector buttons
+  rangeselector=list(
+    buttons=list(
+      list(count=1, label="1m", step="month", stepmode="backward"),
+      list(count=6, label="6m", step="month", stepmode="backward"),
+      list(count=1, label="YTD", step="year", stepmode="todate"),
+      list(count=1, label="1y", step="year", stepmode="backward"),
+      list(count=5, label="5y", step="year", stepmode="backward")
+      #list(count=10, label="10y", step="year", stepmode="backward"),
+      #list(step="all", label = "All")
+      )),
+  # eliminate weekends
+  rangebreaks=list(bounds=list("sat", "mon") #hide weekends
+))
+
+```
+
+# Introduction
+
+Financial markets are complex. The objective of this dashboard is to give readers a 40,000 ft view of global financial markets in as few indicators as possible. The dashboard seeks to:
+
+1\. Avoid cognitive overload by focusing on only five indicators.
+
+2\. Illuminate big-picture trends in global financial markets.
+
+3\. Inform where readers might want to dig deeper.This dashboard is meant to anchor and inform the 15 minute trading floor meeting at the beginning of each class for **Sustainable Finance: Applications and Methods** at the [Johns Hopkins School of Advanced International Studies (SAIS)](https://sais.jhu.edu/).
+
+It is a work in progress, and will evolve & improve over time.
+
+![](images/SAIS Course - Cover Art.png)
+
+## Indicators
+
+-   **Interest Rates**:
+    -   Fed Funds Rate
+    -   US 10-Year Treasury Yield-
+-   **Risk Assets**:
+    -   S&P 500
+-   **Commodities**:
+    -   Oil Prices (Brent)
+-   **Currencies**:
+    -   Broad USD Index
+
+# Dashboard
+
+## Interest Rates
+
+```{r}
+dashboard_data %>%
+  filter(date >= today()-years(5)) %>%
+  filter(date >= ymd("2000-01-01")) %>%
+  filter(indicator %in% c("Fed Funds Rate", "US 10yr Yield")) %>%
+  mutate(weekday = lubridate::wday(date, label = TRUE)) %>%
+  filter(!weekday %in% c("Sat", "Sun")) %>%
+  plot_ly(x = ~date, y = ~level, hoverinfo = "text+name", text = ~paste0("Level: ", round(level,2),"%", "<br>",
+                                                                    "Date: ", date)) %>%
+  add_lines(width = 10, color = ~indicator, colors = c("#114B5F", "#028090"), line = list(width = 3)) %>%
+  layout(xaxis = x_axis_range_options) %>%
+  layout(font = list(family = "Roboto Condensed"),
+         title = list(text = "<b>Interest Rates: Fed Funds Rate & 10yr UST<b>", 
+                      font = list(size = 25)
+                      ),
+         # add a margin between the title & graph
+         margin = list(t = 70),
+         yaxis = list(
+           title = list(
+             text = "<b>Level<b>", 
+             font = list(size = 16)
+             ),
+           ticksuffix = "%"
+           )
+  )
+```
